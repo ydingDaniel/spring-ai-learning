@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Spring AI 测试页</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f7fa; color: #222; padding: 32px; }
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    .subtitle { color: #666; font-size: 14px; margin-bottom: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .card .desc { font-size: 13px; color: #888; margin-bottom: 14px; }
+    .row { display: flex; gap: 10px; }
+    input[type=text] { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+    input[type=text]:focus { border-color: #6366f1; }
+    button { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; white-space: nowrap; }
+    button:hover { background: #4f46e5; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    .result { margin-top: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; font-size: 14px; line-height: 1.7; min-height: 48px; white-space: pre-wrap; color: #333; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+    .tag-green { background: #dcfce7; color: #166534; }
+    .tag-blue  { background: #dbeafe; color: #1e40af; }
+    .tag-purple{ background: #ede9fe; color: #5b21b6; }
+    .tag-orange{ background: #ffedd5; color: #9a3412; }
+    .loading { color: #6366f1; }
+  </style>
+</head>
+<body>
+  <h1>🤖 Spring AI 测试台</h1>
+  <p class="subtitle">启动应用后在这里测试各个接口</p>
+
+  <!-- 普通对话 -->
+  <div class="card">
+    <span class="tag tag-green">GET /ai/chat</span>
+    <h2>普通对话</h2>
+    <p class="desc">直接和 AI 对话，等待完整回复</p>
+    <div class="row">
+      <input type="text" id="chatInput" placeholder="输入消息，例如：用一句话介绍 Java" value="用一句话介绍 Java">
+      <button onclick="sendChat()">发送</button>
+    </div>
+    <div class="result" id="chatResult">等待发送…</div>
+  </div>
+
+  <!-- 工具调用 Agent -->
+  <div class="card">
+    <span class="tag tag-blue">GET /ai/agent</span>
+    <h2>工具调用 Agent</h2>
+    <p class="desc">AI 会自动调用工具（天气/计算/时间），再组合成回答</p>
+    <div class="row">
+      <input type="text" id="agentInput" placeholder="例如：北京天气怎样？3乘以7是多少？现在几点？" value="北京天气怎样？3乘以7是多少？现在几点？">
+      <button onclick="sendAgent()">发送</button>
+    </div>
+    <div class="result" id="agentResult">等待发送…</div>
+  </div>
+
+  <!-- ReAct Agent -->
+  <div class="card">
+    <span class="tag tag-orange">GET /ai/react</span>
+    <h2>ReAct Agent — 多步推理</h2>
+    <p class="desc">AI 先查原价 → 用原价计算折扣 → 再查库存，每步依赖上一步结果</p>
+    <div class="row">
+      <input type="text" id="reactInput" placeholder="例如：我想买 MacBook Pro，帮我查价格、折扣和库存" value="我想买 MacBook Pro，帮我查价格、折扣和库存">
+      <button onclick="sendReact()">发送</button>
+    </div>
+    <div class="result" id="reactResult">等待发送…</div>
+  </div>
+
+  <!-- 流式输出 -->
+  <div class="card">
+    <span class="tag tag-purple">GET /ai/stream</span>
+    <h2>流式输出</h2>
+    <p class="desc">AI 逐字返回，看到内容实时出现</p>
+    <div class="row">
+      <input type="text" id="streamInput" placeholder="例如：用三句话介绍 Spring AI" value="用三句话介绍 Spring AI">
+      <button onclick="sendStream()">发送</button>
+    </div>
+    <div class="result" id="streamResult">等待发送…</div>
+  </div>
+
+  <script>
+    async function sendChat() {
+      const msg = document.getElementById('chatInput').value.trim();
+      if (!msg) return;
+      const el = document.getElementById('chatResult');
+      el.textContent = '请求中…';
+      try {
+        const res = await fetch('/ai/chat?message=' + encodeURIComponent(msg));
+        el.textContent = await res.text();
+      } catch(e) { el.textContent = '请求失败：' + e.message; }
+    }
+
+    async function sendAgent() {
+      const msg = document.getElementById('agentInput').value.trim();
+      if (!msg) return;
+      const el = document.getElementById('agentResult');
+      el.textContent = '请求中（AI 正在调用工具）…';
+      try {
+        const res = await fetch('/ai/agent?message=' + encodeURIComponent(msg));
+        el.textContent = await res.text();
+      } catch(e) { el.textContent = '请求失败：' + e.message; }
+    }
+
+    async function sendReact() {
+      const msg = document.getElementById('reactInput').value.trim();
+      if (!msg) return;
+      const el = document.getElementById('reactResult');
+      el.textContent = '推理中（AI 正在多步调用工具）…';
+      try {
+        const res = await fetch('/ai/react?message=' + encodeURIComponent(msg));
+        el.textContent = await res.text();
+      } catch(e) { el.textContent = '请求失败：' + e.message; }
+    }
+
+    async function sendStream() {
+      const msg = document.getElementById('streamInput').value.trim();
+      if (!msg) return;
+      const el = document.getElementById('streamResult');
+      el.textContent = '';
+      try {
+        const res = await fetch('/ai/stream?message=' + encodeURIComponent(msg));
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          el.textContent += decoder.decode(value);
+        }
+      } catch(e) { el.textContent = '请求失败：' + e.message; }
+    }
+  </script>
+</body>
+</html>

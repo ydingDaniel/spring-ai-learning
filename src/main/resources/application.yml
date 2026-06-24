@@ -3,7 +3,7 @@ spring:
     name: spring-ai-learning
   ai:
     dashscope:
-      api-key: ${DASHSCOPE_API_KEY:sk-fake1234567890abcdef}
+      api-key: ${DASHSCOPE_API_KEY:sk-ws-H.RYHIDHY.cIzZ.MEUCIDhKPpzej4mocIDmCeIYaP0XnvQKML0oAQ7BF6jCBQjrAiEAtRgw0rSqFcxcX5RSv_VdC6zKc6Rdxc-Tn2nu5e6Unt8}
       chat:
         options:
           model: qwen-plus   # 可选: qwen-turbo / qwen-plus / qwen-max
