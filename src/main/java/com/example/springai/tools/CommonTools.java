@@ -24,6 +24,12 @@ public class CommonTools {
         return a * b;
     }
 
+    @Tool(description = "将人民币（CNY）金额换算成美元（USD），汇率固定为 7.2，返回换算结果")
+    public String convertToUSD(double cny) {
+        double usd = cny / 7.2;
+        return String.format("%.2f 元人民币 = %.2f 美元（汇率 7.2）", cny, usd);
+    }
+
     /**
      * 模拟天气查询，实际项目中这里调用真实天气 API
      */
